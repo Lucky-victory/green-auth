@@ -1,6 +1,7 @@
 {
   "name": "@green-auth/snowflake-unique-id",
   "version": "1.0.0",
+  "private": false,
   "description": "A TypeScript implementation of Twitter's Snowflake ID generation algorithm with additional features for URL-safe short IDs.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -23,11 +24,11 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lucky-victory/green-auth.git"
+    "url": "git+https://github.com/lucky-victory1/green-auth.git"
   },
-  "homepage": "https://github.com/lucky-victory/green-auth#readme",
+  "homepage": "https://github.com/lucky-victory1/green-auth/tree/main/snowflake-unique-id#readme",
   "bugs": {
-    "url": "https://github.com/lucky-victory/green-auth/issues"
+    "url": "https://github.com/lucky-victory1/green-auth/issues"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
