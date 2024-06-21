@@ -21,6 +21,14 @@
   ],
   "author": "Lucky Victory <luckyvictory54@gmail.com>",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lucky-victory/green-auth.git"
+  },
+  "homepage": "https://github.com/lucky-victory/green-auth#readme",
+  "bugs": {
+    "url": "https://github.com/lucky-victory/green-auth/issues"
+  },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
     "@types/jest": "^29.5.12",
@@ -30,7 +38,9 @@
     "typescript": "^5.5.2"
   },
   "files": [
-    "dist",
+    "dist/index.js",
+    "dist/index.d.ts",
+    "dist/index.js.map",
     "README.md"
   ]
 }
