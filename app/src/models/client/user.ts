@@ -1,9 +1,8 @@
 import bcrypt from "bcrypt";
 import { db } from "../../db";
-import { ApiKeys, Users } from "../../db/schema/client";
-import { IUser, NEW_USER } from "../../types/common";
+import { UserMeta, Users } from "../../db/schema/client";
+import { USER, NEW_USER } from "../../types/common";
 import isEmpty from "just-is-empty";
-import { generateApiKey } from "../../utils";
 
 export const UserModel = {
   ...Users,
@@ -12,50 +11,108 @@ export const UserModel = {
     return isValid;
   },
   findOne: async (
-    emailOrAuthId: string,
-    excludeFields: (keyof IUser)[] = ["password"]
+    emailOrAuthIdOrAddress: string,
+    appId: string,
+    excludeFields: (keyof USER)[] = ["password"]
   ) => {
     const columns = excludeFields.reduce((acc, exclude) => {
-      acc[exclude] = true;
+      acc[exclude] = false;
       return acc;
-    }, {} as Record<keyof IUser, boolean>);
+    }, {} as Record<keyof USER, boolean>);
 
     const user = await db.query.Users.findFirst({
       ...(!isEmpty(columns) ? { columns } : {}),
+      with: {
+        meta: {
+          columns: { is_new_user: true, last_login: true },
+        },
+      },
       where: (fields, ops) =>
-        ops.or(
-          ops.eq(fields.email, emailOrAuthId),
-          ops.eq(fields.auth_id, emailOrAuthId)
+        ops.and(
+          ops.or(
+            ops.eq(fields.email, emailOrAuthIdOrAddress),
+            ops.eq(fields.auth_id, emailOrAuthIdOrAddress),
+            ops.eq(fields.address, emailOrAuthIdOrAddress)
+          ),
+          ops.eq(fields.application_id, appId)
         ),
     });
 
     return user;
   },
   findByAuthId: async (
-    auth_id: string,
-    excludeFields: (keyof IUser)[] = ["password"]
+    authId: string,
+    appId: string,
+    excludeFields: (keyof USER)[] = ["password"]
   ) => {
     const columns = excludeFields.reduce((acc, exclude) => {
-      acc[exclude] = true;
+      acc[exclude] = false;
       return acc;
-    }, {} as Record<keyof IUser, boolean>);
+    }, {} as Record<keyof USER, boolean>);
+
     const user = await db.query.Users.findFirst({
       ...(!isEmpty(columns) ? { columns } : {}),
-      where: (fields, ops) => ops.eq(fields.auth_id, auth_id),
+      where: (fields, ops) =>
+        ops.and(
+          ops.eq(fields.auth_id, authId),
+          ops.eq(fields.application_id, appId)
+        ),
+      with: {
+        meta: {
+          columns: { is_new_user: true, last_login: true },
+        },
+      },
     });
     return user;
   },
 
-  create: async (newUser: NEW_USER) => {
+  findUsersByAppId: async (
+    appId: string,
+    excludeFields: (keyof USER)[] = ["password"]
+  ) => {
+    const columns = excludeFields.reduce((acc, exclude) => {
+      acc[exclude] = false;
+      return acc;
+    }, {} as Record<keyof USER, boolean>);
+    const users = await db.query.Users.findMany({
+      ...(!isEmpty(columns) ? { columns } : {}),
+      where: (fields, ops) => ops.eq(fields.application_id, appId),
+      with: {
+        meta: {
+          columns: { is_new_user: true, last_login: true },
+        },
+      },
+    });
+    return users;
+  },
+
+  create: async (
+    newUser: NEW_USER,
+    excludeFields: (keyof USER)[] = ["password"]
+  ) => {
+    const columns = excludeFields.reduce((acc, exclude) => {
+      acc[exclude] = false;
+      return acc;
+    }, {} as Record<keyof USER, boolean>);
     const createdUser = await db.transaction(async (tx) => {
       const [insertResponse] = await tx.insert(Users).values(newUser);
       const user = await tx.query.Users.findFirst({
+        ...(!isEmpty(columns) ? { columns } : {}),
+        with: {
+          meta: {
+            columns: {
+              is_new_user: true,
+              last_login: true,
+            },
+          },
+        },
         where: (fields, ops) => ops.eq(fields.id, insertResponse.insertId),
       });
-      await tx.insert(ApiKeys).values({
-        created_by: user?.auth_id as string,
-        key: generateApiKey(),
+      await tx.insert(UserMeta).values({
+        is_new_user: true,
+        user_id: user?.auth_id as string,
       });
+
       return user;
     });
     return createdUser;

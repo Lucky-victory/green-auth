@@ -2,11 +2,11 @@ import { Request, Response, NextFunction } from "express";
 import { verifyToken } from "../../config/jwt";
 import { UserModel } from "../../models/client/user";
 import { AuthService } from "../../services/auth";
-import { IUser } from "../../types/common";
+import { USER } from "../../types/common";
 
 declare global {
   namespace Express {
-    interface User extends IUser {}
+    interface User extends USER {}
   }
 }
 

@@ -15,7 +15,6 @@ export const Applications = mysqlTable("Applications", {
   id: int("id").autoincrement().primaryKey(),
   name: varchar("name", { length: 100 }).notNull(),
   description: varchar("description", { length: 255 }),
-
   app_id: varchar("app_id", { length: 50 })
     .unique()
     .notNull()
@@ -34,7 +33,7 @@ export const Users = mysqlTable(
       .notNull()
       .$defaultFn(authIdGenerator)
       .primaryKey(),
-    first_name: varchar("name", { length: 100 }),
+    first_name: varchar("first_name", { length: 100 }),
     last_name: varchar("last_name", { length: 100 }),
     avatar: varchar("avatar", { length: 255 }),
     username: varchar("username", { length: 100 }),
@@ -51,7 +50,8 @@ export const Users = mysqlTable(
     ]).notNull(),
     address: varchar("address", { length: 50 }),
     chain_id: varchar("chain_id", { length: 50 }),
-    email: varchar("email", { length: 255 }).unique().notNull(),
+    network: varchar("network", { length: 50 }),
+    email: varchar("email", { length: 255 }).unique(),
     password: varchar("password", { length: 255 }),
     created_at: timestamp("created_at").defaultNow(),
     updated_at: timestamp("updated_at").onUpdateNow(),

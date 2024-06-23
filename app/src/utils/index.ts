@@ -8,8 +8,8 @@ const snowflakeId = new SnowflakeIdGenerator({
 const snowflake2 = new SnowflakeIdGenerator({
   nodeId: 2,
 });
-export const generateAppId = snowflake2.bigIntId;
+export const generateAppId = () => snowflake2.bigIntId();
 
-export const authIdGenerator = snowflakeId.bigIntId;
-export const shortIdGenerator = snowflakeId.urlSafeId;
-export const generateApiKey = () => `sk_${shortIdGenerator(21)}`;
+export const authIdGenerator = () => snowflakeId.bigIntId();
+export const shortIdGenerator = (len?: number) => snowflakeId.urlSafeId(len);
+export const generateApiKey = () => `sk_${shortIdGenerator(36)}`;

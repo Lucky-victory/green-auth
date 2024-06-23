@@ -9,10 +9,8 @@ import {
 
 // // Routes
 import indexRoute from "./routes";
-// import linkRoute from "./routes/link";
-// import apiKeyRoute from "./routes/api-key";
-// import authRoute from "./routes/auth";
-
+import authRoute from "./routes/auth";
+import applicationRoute from "./routes/application";
 export const app = express();
 
 // Express configuration
@@ -28,9 +26,8 @@ app.use(passport.initialize());
 
 //routes
 app.use("/", indexRoute);
-// app.use("/link", linkRoute);
-// app.use("/api-key", apiKeyRoute);
-// app.use("/auth", authRoute);
+app.use("/auth", authRoute);
+app.use("/application", applicationRoute);
 
 app.use(errorNotFoundHandler);
 app.use(errorHandler);

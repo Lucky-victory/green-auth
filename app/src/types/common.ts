@@ -1,78 +1,27 @@
-export interface IApikey {
-  status: API_KEY_STATUS;
-  created_at: string;
-  updated_at: string;
-  last_used_at?: string | null;
-  key: string;
-  created_by: string;
-  expires_in: string;
-  permission: API_KEY_PERMISSIONS;
-}
-export type API_KEY_PERMISSIONS = "can_crud" | "can_read" | "can_create";
-export type API_KEY_STATUS = "revoked" | "active" | "expired" | "deleted";
-export type NEW_API_KEY = Pick<
-  IApikey,
-  "created_by" | "expires_in" | "key" | "permission"
->;
-export interface ILink {
-  id: number;
-  short_url: string;
-  created_at: string;
-  updated_at: string;
-  custom_title?: string;
-  /**
-   * this could be api key id
-   */
-  created_by: string;
-  long_url: string;
-  views: number;
-}
-export type NEW_LINK = Pick<
-  ILink,
-  "custom_title" | "created_by" | "long_url" | "short_url"
->;
-export interface ILinkMetadata {
-  referers: string;
-  /**
-   * this could be browser, device, etc
-   */
-  user_agent: string;
-  ip: string;
-  country?: string;
-  city?: string;
-  created_at?: string;
-}
-export interface IUser {
-  id: number;
-  username?: string;
-  first_name: string;
-  last_name?: string;
-  email: string;
-  password?: string;
-  address?: string;
-  chain_id?: string;
-  application_id: string;
-  auth_id?: string;
-  verification_status?: VERIFICATION_STATUS;
-  auth_type: AUTH_TYPE;
-  avatar?: string;
-  type?: "application" | "client";
-}
-export type AUTH_TYPE = "google" | "github" | "email" | "web3";
-export type NEW_USER = Pick<
-  IUser,
-  | "email"
-  | "first_name"
-  | "avatar"
-  | "auth_id"
-  | "application_id"
-  | "address"
-  | "chain_id"
-  | "last_name"
-  | "password"
-  | "username"
-  | "verification_status"
-  | "auth_type"
-  | "type"
->;
-export type VERIFICATION_STATUS = "pending" | "verified" | "unverified";
+import { InferInsertModel, InferSelectModel } from "drizzle-orm";
+import { Applications, UserMeta, Users } from "../db/schema";
+
+export type USER_SELECT = InferSelectModel<typeof Users>;
+export type USER_META = InferSelectModel<typeof UserMeta>;
+export type USER_APPS = InferSelectModel<typeof Applications>;
+export type USER = USER_SELECT;
+export type USER_WITH_META = USER_SELECT & { meta: USER_META };
+export type USER_WITH_APPS = USER & { apps: USER_APPS[] };
+
+export type NEW_USER = InferInsertModel<typeof Users>
+// Pick<
+//   USER,
+//   | "email"
+//   | "first_name"
+//   | "avatar"
+//   | "auth_id"
+//   | "application_id"
+//   | "address"
+//   | "chain_id"
+//   | "last_name"
+//   | "password"
+//   | "username"
+//   | "verification_status"
+//   | "auth_type"
+//   | "type"
+// >;
