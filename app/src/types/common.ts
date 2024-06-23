@@ -1,4 +1,3 @@
-
 export interface IApikey {
   status: API_KEY_STATUS;
   created_at: string;
@@ -50,23 +49,30 @@ export interface IUser {
   last_name?: string;
   email: string;
   password?: string;
+  address?: string;
+  chain_id?: string;
+  application_id: string;
   auth_id?: string;
   verification_status?: VERIFICATION_STATUS;
-  last_login?: Date | null;
   auth_type: AUTH_TYPE;
   avatar?: string;
+  type?: "application" | "client";
 }
-export type AUTH_TYPE = "google" | "github" | "email";
+export type AUTH_TYPE = "google" | "github" | "email" | "web3";
 export type NEW_USER = Pick<
   IUser,
   | "email"
   | "first_name"
   | "avatar"
   | "auth_id"
+  | "application_id"
+  | "address"
+  | "chain_id"
   | "last_name"
   | "password"
   | "username"
   | "verification_status"
   | "auth_type"
+  | "type"
 >;
 export type VERIFICATION_STATUS = "pending" | "verified" | "unverified";

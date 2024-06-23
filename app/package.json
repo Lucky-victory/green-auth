@@ -45,6 +45,7 @@
     "express-validator": "^7.1.0",
     "http-errors": "^2.0.0",
     "jsonwebtoken": "^9.0.2",
+    "just-is-empty": "^3.4.1",
     "morgan": "^1.10.0",
     "mysql2": "^3.10.1",
     "passport": "^0.7.0",

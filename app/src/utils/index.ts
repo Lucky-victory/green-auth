@@ -9,7 +9,7 @@ const snowflake2 = new SnowflakeIdGenerator({
   nodeId: 2,
 });
 export const generateAppId = snowflake2.bigIntId;
-export const generateApiKey = () => uuid();
 
 export const authIdGenerator = snowflakeId.bigIntId;
 export const shortIdGenerator = snowflakeId.urlSafeId;
+export const generateApiKey = () => `sk_${shortIdGenerator(21)}`;

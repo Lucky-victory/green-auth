@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { verifyToken } from "../../config/jwt";
-import { clientUser } from "../../models/client/user";
+import { UserModel } from "../../models/client/user";
 import { AuthService } from "../../services/auth";
 import { IUser } from "../../types/common";
 

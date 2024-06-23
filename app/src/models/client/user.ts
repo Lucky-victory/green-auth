@@ -1,11 +1,11 @@
 import bcrypt from "bcrypt";
 import { db } from "../../db";
-import { ApiKeys, Users } from "../db/schema";
-import { IUser, NEW_USER } from "../types/common";
+import { ApiKeys, Users } from "../../db/schema/client";
+import { IUser, NEW_USER } from "../../types/common";
 import isEmpty from "just-is-empty";
-import { generateApiKey } from "../utils";
+import { generateApiKey } from "../../utils";
 
-export const clientUser = {
+export const UserModel = {
   ...Users,
   validatePassword: async (password: string, enteredPassword: string) => {
     const isValid = await bcrypt.compare(password, enteredPassword);
