@@ -7,7 +7,7 @@ import isEmpty from "just-is-empty";
 export const UserModel = {
   ...Users,
   validatePassword: async (password: string, enteredPassword: string) => {
-    const isValid = await bcrypt.compare(password, enteredPassword);
+    const isValid = await bcrypt.compare(enteredPassword, password);
     return isValid;
   },
   findOne: async (
@@ -19,6 +19,7 @@ export const UserModel = {
       acc[exclude] = false;
       return acc;
     }, {} as Record<keyof USER, boolean>);
+    console.log({ columns, excludeFields, appId, emailOrAuthIdOrAddress });
 
     const user = await db.query.Users.findFirst({
       ...(!isEmpty(columns) ? { columns } : {}),

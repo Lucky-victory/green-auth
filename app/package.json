@@ -50,6 +50,7 @@
     "mysql2": "^3.10.1",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
+    "passport-local": "^1.0.0",
     "tiny-csrf": "^1.1.4",
     "tweetnacl": "^1.0.3",
     "uuid": "^10.0.0"

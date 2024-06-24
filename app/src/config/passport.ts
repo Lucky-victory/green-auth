@@ -5,14 +5,15 @@ import { UserModel } from "../models/client/user";
 
 passport.use(
   new LocalStrategy(
-    { usernameField: "email" },
-    async (email, password, done) => {
+    { usernameField: "email", passReqToCallback: true },
+    async (req, email, password, done) => {
       try {
-        const user = await User.findOne(email, []);
+        const application_id = req.body?.application_id;
+        const user = await UserModel.findOne(email, application_id, []);
         if (!user)
           return done(null, false, { message: "Invalid credentials." });
 
-        const isValid = await User.validatePassword(
+        const isValid = await UserModel.validatePassword(
           user.password as string,
           password
         );
@@ -32,16 +33,22 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-      callbackURL: "/auth/google/callback",
+      callbackURL: process.env.GOOGLE_REDIRECT_URL || "",
+      passReqToCallback: true,
     },
-    async (accessToken, refreshToken, profile, done) => {
+    async (req, accessToken, refreshToken, profile, done) => {
+      const { application_id, type } = req.query.state
+        ? JSON.parse(req.query.state as string)
+        : undefined;
       try {
-        let user = await User.findByAuthId(profile.id);
+        let user = await UserModel.findOne(profile.id, application_id);
 
         if (!user) {
-          user = await User.create({
+          user = await UserModel.create({
             verification_status: "verified",
             auth_id: profile.id,
+            application_id,
+            type,
             auth_type: "google",
             avatar: profile?.photos?.[0].value,
             first_name: profile.name?.givenName as string,

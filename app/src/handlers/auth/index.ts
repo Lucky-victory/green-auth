@@ -3,7 +3,7 @@ import { UserModel } from "../../models/client/user";
 import { generateToken } from "../../config/jwt";
 import { USER } from "../../types/common";
 import bcrypt from "bcrypt";
-import passport from "passport";
+import passport from "../../config/passport";
 import isEmpty from "just-is-empty";
 
 export class AuthHandler {
@@ -52,7 +52,7 @@ export class AuthHandler {
     }
   }
   static async login(req: Request, res: Response, next: NextFunction) {
-    passport.authenticate(
+    return passport.authenticate(
       "local",
       { session: false },
       (err: Error, user: USER) => {
@@ -69,13 +69,21 @@ export class AuthHandler {
     } catch (error) {}
   }
   static async googleLogin(req: Request, res: Response, next: NextFunction) {
-    passport.authenticate("google", {
+    if (!req.query.application_id)
+      throw new Error("application_id is required");
+    const state = JSON.stringify({
+      application_id: req.query.application_id,type: req.query.type
+    });
+    console.log({ state });
+
+    return passport.authenticate("google", {
       session: false,
-      scope: ["profile", "email"],
+      state,
+      scope: ["profile", "email", "openid"],
     })(req, res, next);
   }
   static async googleCallback(req: Request, res: Response, next: NextFunction) {
-    passport.authenticate("google", { session: false }, (err, user) => {
+    return passport.authenticate("google", { session: false }, (err, user) => {
       if (err || !user) {
         return res.status(400).json({ error: "Authentication failed" });
       }

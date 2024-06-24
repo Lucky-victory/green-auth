@@ -1,7 +1,7 @@
 import express from "express";
 import logger from "morgan";
 import * as path from "path";
-import passport from "passport";
+import passport from "./config/passport";
 import {
   errorHandler,
   errorNotFoundHandler,

@@ -16,20 +16,20 @@ export const authMiddleware = async (
   next: NextFunction
 ) => {
   try {
-    const authHeader = AuthService.getApiKeyFromHeader(req);
-    if (!authHeader) {
-      return res.status(401).json({ error: "Authorization header missing" });
-    }
+    // const authHeader = AuthService.getApiKeyFromHeader(req);
+    // if (!authHeader) {
+    //   return res.status(401).json({ error: "Authorization header missing" });
+    // }
 
-    const token = authHeader.split(" ")[1];
-    const decoded = verifyToken(token);
-    const user = await User.findByAuthId(decoded.id);
+    // const token = authHeader.split(" ")[1];
+    // const decoded = verifyToken(token);
+    // const user = await UserModel.findByAuthId(decoded.id);
 
-    if (!user) {
-      return res.status(401).json({ error: "User not found" });
-    }
-    //@ts-ignore
-    req.user = user;
+    // if (!user) {
+    //   return res.status(401).json({ error: "User not found" });
+    // }
+    // //@ts-ignore
+    // req.user = user;
 
     next();
   } catch (error) {
