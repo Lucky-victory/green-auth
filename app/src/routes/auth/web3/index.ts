@@ -11,10 +11,12 @@ import { USER } from "../../../types/common";
 const router = Router();
 
 router
-  .post("/verify", () => {})
+  .post("/solana/verify", () => {})
   .post("/solana", () => {})
+  .post("/solana/request-message", () => {})
   .post("/ethereum", () => {})
-  .post("/request-message", () => {});
+  .post("/ethereum/verify", () => {})
+  .post("/ethereum/request-message", () => {})
 
 export default router;
 // import User from "../models/user";

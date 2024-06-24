@@ -27,7 +27,7 @@ app.use(passport.initialize());
 //routes
 app.use("/", indexRoute);
 app.use("/auth", authRoute);
-app.use("/application", applicationRoute);
+app.use("/applications", applicationRoute);
 
 app.use(errorNotFoundHandler);
 app.use(errorHandler);

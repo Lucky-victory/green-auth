@@ -13,7 +13,7 @@ import { Applications, Users } from "../client";
 
 export const ApplicationSecretKeys = mysqlTable("ApplicationSecretKeys", {
   id: int("id").autoincrement().primaryKey(),
-  application_id: varchar("application_id", { length: 50 }).notNull(),
+  application_id: int("application_id").notNull(),
   api_key: varchar("api_key", { length: 50 })
     .unique()
     .notNull()
@@ -27,7 +27,7 @@ export const ApplicationSecretKeys = mysqlTable("ApplicationSecretKeys", {
 
 export const ApplicationMeta = mysqlTable("ApplicationMeta", {
   id: int("id").autoincrement().primaryKey(),
-  application_id: varchar("application_id", { length: 50 }).notNull(),
+  application_id: int("application_id").notNull(),
   allowed_origins: json("allowed_origins"),
   logo: varchar("logo", { length: 255 }),
   created_at: timestamp("created_at").defaultNow(),
@@ -39,7 +39,7 @@ export const ApplicationMetaRelations = relations(
   ({ one }) => ({
     application: one(Applications, {
       fields: [ApplicationMeta.application_id],
-      references: [Applications.app_id],
+      references: [Applications.id],
     }),
   })
 );
@@ -51,7 +51,7 @@ export const ApplicationRelations = relations(
       references: [Users.auth_id],
     }),
     meta: one(ApplicationMeta, {
-      fields: [Applications.app_id],
+      fields: [Applications.id],
       references: [ApplicationMeta.application_id],
     }),
 
@@ -64,7 +64,7 @@ export const ApplicationSecretKeysRelations = relations(
   ({ one }) => ({
     application: one(Applications, {
       fields: [ApplicationSecretKeys.application_id],
-      references: [Applications.app_id],
+      references: [Applications.id],
     }),
   })
 );

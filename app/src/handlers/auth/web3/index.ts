@@ -1,11 +1,27 @@
 import { NextFunction, Request, Response } from "express";
 
 export class WebAuthHandler {
-  static async requestMessage(req: Request, res: Response, next: NextFunction) {
+  static async solanaRequestMessage(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+    } catch (error) {}
+  }
+  static async ethereumRequestMessage(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
     try {
     } catch (error) {}
   }
   static async verify(req: Request, res: Response, next: NextFunction) {
+    try {
+    } catch (error) {}
+  }
+  static async solanaVerify(req: Request, res: Response, next: NextFunction) {
     try {
     } catch (error) {}
   }

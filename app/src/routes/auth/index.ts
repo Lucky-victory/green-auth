@@ -8,14 +8,14 @@ const router = Router();
 router.post(
   "/register",
   //   registerValidator,
-  validationErrorHandler,
+  // validationErrorHandler,
   AuthHandler.register
 );
 
 router.post(
   "/login",
   //   loginValidator,
-  validationErrorHandler,
+  // validationErrorHandler,
   AuthHandler.login
 );
 
