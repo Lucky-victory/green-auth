@@ -1,5 +1,9 @@
 import { Request, Response, NextFunction } from "express";
-import { getAppIdFromHeaderQueryOrBody, getTokenFromHeaders, verifyToken } from "../../config/jwt";
+import {
+  getAppIdFromHeaderQueryOrBody,
+  getTokenFromHeaders,
+  verifyToken,
+} from "../../config/jwt";
 import { UserModel } from "../../models/client/user";
 import { AuthService } from "../../services/auth";
 import { USER } from "../../types/common";
@@ -16,13 +20,15 @@ export const authMiddleware = async (
   next: NextFunction
 ) => {
   try {
-    const authHeader = getTokenFromHeaders(req);
-    if (!authHeader) {
+    const token = getTokenFromHeaders(req);
+    if (!token) {
       return res.status(401).json({ error: "Authorization header missing" });
     }
-    const token = authHeader.split(" ")[1];
+
     const decoded = verifyToken(token);
-    const user = await UserModel.findByAuthId(decoded.id,'green_auth');
+    console.log({ decoded });
+
+    const user = await UserModel.findByAuthId(decoded.id, "green_auth");
 
     if (!user) {
       return res.status(401).json({ error: "User not found" });
@@ -32,10 +38,16 @@ export const authMiddleware = async (
 
     next();
   } catch (error) {
+    console.log({ error });
+
     res.status(401).json({ error: "Invalid token" });
   }
 };
-export const appIdMiddleware = (req: Request, res: Response, next: NextFunction) => {
+export const appIdMiddleware = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const appId = getAppIdFromHeaderQueryOrBody(req);
     if (!appId) {
@@ -45,5 +57,4 @@ export const appIdMiddleware = (req: Request, res: Response, next: NextFunction)
   } catch (error) {
     res.status(401).json({ error: "Invalid token" });
   }
-
-}
+};

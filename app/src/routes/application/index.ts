@@ -8,6 +8,8 @@ router
   .get("/", ApplicationHandler.getAll)
   .post("/", authMiddleware, ApplicationHandler.create)
   .get("/:app_id", ApplicationHandler.getOne)
-  .post("/new", authMiddleware, ApplicationHandler.create);
+  .use(authMiddleware)
+  .put("/:app_id", ApplicationHandler.update)
+  .post("/new", ApplicationHandler.create);
 
 export default router;

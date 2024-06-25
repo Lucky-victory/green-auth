@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import { db } from "../../db";
 import {
   ApplicationMeta,
@@ -5,6 +6,7 @@ import {
   ApplicationSecretKeys,
 } from "../../db/schema";
 import { NEW_APPLICATION } from "../../types/common";
+import isEmpty from "just-is-empty";
 
 export const ApplicationModel = {
   ...Applications,
@@ -20,8 +22,19 @@ export const ApplicationModel = {
       const app = await tx.query.Applications.findFirst({
         where: (fields, ops) => ops.eq(fields.id, insertResponse.insertId),
         with: {
-          meta: true,
-          secrets: true,
+          meta: {
+            columns: {
+              allowed_origins: true,
+              logo: true,
+            },
+          },
+          secrets: {
+            columns: {
+              api_key: true,
+              status: true,
+              expires_at: true,
+            },
+          },
         },
       });
       return app;
@@ -45,5 +58,27 @@ export const ApplicationModel = {
     });
     // const apps = await db.query.Applications.findMany();
     return apps;
+  },
+  update: async (appId: string, data: Partial<NEW_APPLICATION>) => {
+    if (isEmpty(data)) return;
+    const app = await db
+      .update(Applications)
+      .set(data)
+      .where(eq(Applications.app_id, appId));
+    return app;
+  },
+  findUsers: async (appId: string) => {
+    const users = await db.query.Users.findMany({
+      where: (fields, ops) => ops.eq(fields.application_id, appId),
+      with: {
+        meta: {
+          columns: {
+            is_new_user: true,
+            last_login: true,
+          },
+        },
+      },
+    });
+    return users;
   },
 };
