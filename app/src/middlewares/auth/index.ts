@@ -5,7 +5,6 @@ import {
   verifyToken,
 } from "../../config/jwt";
 import { UserModel } from "../../models/client/user";
-import { AuthService } from "../../services/auth";
 import { USER } from "../../types/common";
 
 declare global {

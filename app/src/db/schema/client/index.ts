@@ -5,12 +5,31 @@ import {
   int,
   mysqlEnum,
   mysqlTable,
+  text,
   timestamp,
+  uniqueIndex,
   varchar,
 } from "drizzle-orm/mysql-core";
 import { authIdGenerator, generateAppId } from "../../../utils";
 import { relations } from "drizzle-orm";
 
+export const AuthMessages = mysqlTable(
+  "AuthMessages",
+  {
+    id: int("id").primaryKey().autoincrement(),
+    nonce: varchar("nonce", { length: 36 }).notNull().unique(),
+    message: text("message").notNull(),
+    address: varchar("address", { length: 255 }).notNull(),
+    chain: varchar("chain", { length: 50 }),
+    chain_id: varchar("chain_id", { length: 50 }),
+    network: varchar("network", { length: 50 }),
+    created_at: timestamp("created_at").defaultNow(),
+    expires_at: timestamp("expires_at"),
+  },
+  (table) => ({
+    nonceIndex: uniqueIndex("nonce_idx").on(table.nonce),
+  })
+);
 export const Applications = mysqlTable("Applications", {
   id: int("id").autoincrement().primaryKey(),
   name: varchar("name", { length: 100 }).notNull(),
@@ -35,6 +54,7 @@ export const Users = mysqlTable(
       .primaryKey(),
     first_name: varchar("first_name", { length: 100 }),
     last_name: varchar("last_name", { length: 100 }),
+    chain: varchar("chain", { length: 50 }),
     avatar: varchar("avatar", { length: 255 }),
     username: varchar("username", { length: 100 }),
     verification_status: mysqlEnum("verification_status", [

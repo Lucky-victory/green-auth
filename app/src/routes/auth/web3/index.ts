@@ -16,7 +16,7 @@ router
   .post("/solana/request-message", () => {})
   .post("/ethereum", () => {})
   .post("/ethereum/verify", () => {})
-  .post("/ethereum/request-message", () => {})
+  .post("/ethereum/request-message", () => {});
 
 export default router;
 // import User from "../models/user";
@@ -46,37 +46,4 @@ export default router;
 //   }
 // });
 
-router.post("/solana", async (req, res) => {
-  try {
-    const { signature, message, application_id, network } = req.body;
-
-    // Verify the signature
-    const publicKey = new PublicKey(req.body.publicKey);
-    const isValid = tweetnacl.verify(message, signature);
-
-    if (!isValid) {
-      return res.status(400).json({ error: "Invalid signature" });
-    }
-
-    // Check if the user exists or create a new one
-    let user = await UserModel.findOne(publicKey.toBase58(), application_id);
-
-    if (!user) {
-      //@ts-ignore
-      user = await UserModel.create({
-        address: publicKey.toBase58(),
-        application_id,
-        auth_type: "web3",
-        network: network || "solana",
-      });
-    }
-
-    // Generate and return JWT token
-    const token = generateToken(user as USER);
-    res.json({ token });
-  } catch (error: any) {
-    res
-      .status(500)
-      .json({ error: error?.message || "Something went wrong..." });
-  }
-});
+router.post("/solana", async (req, res) => {});
