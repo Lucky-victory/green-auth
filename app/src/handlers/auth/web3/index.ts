@@ -12,73 +12,48 @@ import { ethers } from "ethers";
 import { v4 as uuidV4 } from "uuid";
 import { AuthMessages } from "../../../db/schema";
 import { db } from "../../../db";
-import { eq } from "drizzle-orm";
-import { solanaConnection } from "../../../config/solana";
+import { eq, and } from "drizzle-orm";
 
 export class Web3AuthHandler {
-  static async solanaRequestMessage(
-    req: Request,
-    res: Response,
-    next: NextFunction
+  private static async createAuthMessage(
+    address: string,
+    chain: string,
+    network: string,
+    additionalInfo?: string
   ) {
-    try {
-      const { address, chain, network } = req.body;
-      const nonce = uuidV4();
-      const expiresIn = 10 * 60 * 1000; // 10 minutes
-      const expiresAt = new Date(Date.now() + expiresIn);
-      const message = `Please sign this message to confirm your identity.
+    const nonce = uuidV4();
+    const expiresIn = 10 * 60 * 1000; // 10 minutes
+    const expiresAt = new Date(Date.now() + expiresIn);
+    const message = `Please sign this message to confirm your identity.
 Address: ${address}
 Chain: ${chain}
 Network: ${network}
 Nonce: ${nonce}
 Time: ${new Date().toISOString()}
-Expires At: ${expiresAt.toISOString()}`;
+Expires At: ${expiresAt.toISOString()}
+${additionalInfo || ""}`;
 
-      await db.insert(AuthMessages).values({
-        nonce,
-        message,
-        address,
-        chain,
-        network,
-        expires_at: expiresAt,
-      });
+    await db.insert(AuthMessages).values({
+      nonce,
+      message,
+      address,
+      chain,
+      network,
+      expires_at: expiresAt,
+    });
 
-      res.json({
-        data: message,
-      });
-    } catch (error: any) {
-      res
-        .status(500)
-        .json({ error: error?.message || "Something went wrong..." });
-    }
+    return message;
   }
-  static async ethereumRequestMessage(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) {
+
+  static async solanaRequestMessage(req: Request, res: Response) {
     try {
       const { address, chain, network } = req.body;
-      const nonce = uuidV4();
-      const expiresIn = 10 * 60 * 1000; // 10 minutes
-      const expiresAt = new Date(Date.now() + expiresIn);
-      const message = `Please sign this message to confirm your identity.
-Address: ${address}
-Chain: ${chain}
-Nonce: ${nonce}
-Time: ${new Date().toISOString()}
-Expires At: ${expiresAt.toISOString()}`;
-      await db.insert(AuthMessages).values({
-        nonce,
-        message,
+      const message = await Web3AuthHandler.createAuthMessage(
         address,
         chain,
-        network,
-        expires_at: expiresAt,
-      });
-      res.json({
-        data: message,
-      });
+        network
+      );
+      res.json({ data: message });
     } catch (error: any) {
       res
         .status(500)
@@ -86,52 +61,92 @@ Expires At: ${expiresAt.toISOString()}`;
     }
   }
 
-  static async solanaVerify(req: Request, res: Response, next: NextFunction) {
+  static async ethereumRequestMessage(req: Request, res: Response) {
+    try {
+      const { address, chain, network } = req.body;
+      const message = await Web3AuthHandler.createAuthMessage(
+        address,
+        chain,
+        network
+      );
+      res.json({ data: message });
+    } catch (error: any) {
+      res
+        .status(500)
+        .json({ error: error?.message || "Something went wrong..." });
+    }
+  }
+
+  private static async verifyMessage(
+    address: string,
+    chain: string,
+    message: string,
+    signature: string,
+    verifyFunction: (message: string, signature: string) => boolean
+  ) {
+    const storedMessage = await db.query.AuthMessages.findFirst({
+      where: and(
+        eq(AuthMessages.address, address),
+        eq(AuthMessages.chain, chain)
+      ),
+    });
+
+    if (!storedMessage) {
+      throw new Error("No message found");
+    }
+
+    if (new Date() > new Date(storedMessage.expires_at as Date)) {
+      throw new Error("Message has expired");
+    }
+
+    if (message !== storedMessage.message) {
+      throw new Error("Invalid message");
+    }
+
+    const isValid = verifyFunction(message, signature);
+
+    if (!isValid) {
+      throw new Error("Invalid signature");
+    }
+
+    await db
+      .delete(AuthMessages)
+      .where(eq(AuthMessages.nonce, storedMessage.nonce));
+
+    return true;
+  }
+
+  static async solanaVerify(req: Request, res: Response) {
     try {
       const { signature, message, network, chain, address } = req.body;
       const application_id = getAppIdFromHeaderQueryOrBody(req);
 
-      const storedMessage = await db.query.AuthMessages.findFirst({
-        where(fields, ops) {
-          return ops.eq(fields.address, address);
-        },
-      });
-
-      if (new Date() > new Date(storedMessage?.expires_at as Date)) {
-        return res.status(400).json({ error: "Message has expired" });
-      }
-      console.log({ message, stored: storedMessage?.message, signature });
-
-      // Compare the received message with the stored message
-      if (message !== storedMessage?.message) {
-        return res.status(400).json({ error: "Invalid message" });
-      }
-      const publicKey = new PublicKey(address);
-      const messageBytes = new TextEncoder().encode(message);
-      const signatureBytes = bs58.decode(signature);
-      const isValid = nacl.sign.detached.verify(
-        messageBytes,
-        signatureBytes,
-        publicKey.toBytes()
+      await Web3AuthHandler.verifyMessage(
+        address,
+        chain,
+        message,
+        signature,
+        (msg, sig) => {
+          const publicKey = new PublicKey(address);
+          const messageBytes = new TextEncoder().encode(msg);
+          const signatureBytes = bs58.decode(sig);
+          return nacl.sign.detached.verify(
+            messageBytes,
+            signatureBytes,
+            publicKey.toBytes()
+          );
+        }
       );
 
-      if (!isValid) {
-        return res.status(400).json({ data: null, error: "Invalid signature" });
-      }
-      if (isValid) {
-        await db
-          .delete(AuthMessages)
-          .where(eq(AuthMessages.nonce, storedMessage?.nonce as string));
-      }
-      // Check if the user exists or create a new one
-      let user = await UserModel.findOne(publicKey.toBase58(), application_id);
+      let user = await UserModel.findOne(address, application_id);
 
       if (!user) {
         user = await UserModel.create({
-          address: publicKey.toBase58(),
+          address,
           application_id,
           auth_type: "web3",
-          network: network,
+          network,
+          chain,
         });
       }
 
@@ -143,7 +158,8 @@ Expires At: ${expiresAt.toISOString()}`;
         .json({ error: error?.message || "Something went wrong..." });
     }
   }
-  static async ethereumVerify(req: Request, res: Response, next: NextFunction) {
+
+  static async ethereumVerify(req: Request, res: Response) {
     try {
       const {
         message,
@@ -155,32 +171,17 @@ Expires At: ${expiresAt.toISOString()}`;
         chain,
       } = req.body;
 
-      const storedMessage = await db.query.AuthMessages.findFirst({
-        where(fields, ops) {
-          return ops.and(
-            ops.eq(fields.address, address),
-            ops.eq(fields.chain, chain)
-          );
-        },
-      });
-      if (new Date() > new Date(storedMessage?.expires_at as Date)) {
-        return res.status(400).json({ error: "Message has expired" });
-      }
+      await Web3AuthHandler.verifyMessage(
+        address,
+        chain,
+        message,
+        signature,
+        (msg, sig) => {
+          const recoveredAddress = ethers.verifyMessage(msg, sig);
+          return recoveredAddress.toLowerCase() === address.toLowerCase();
+        }
+      );
 
-      // Compare the received message with the stored message
-      if (message !== storedMessage?.message) {
-        return res.status(400).json({ error: "Invalid message" });
-      }
-      const recoveredAddress = ethers.verifyMessage(message, signature);
-      const isValid = recoveredAddress.toLowerCase() === address.toLowerCase();
-      if (!isValid) {
-        return res.status(400).json({ data: null, error: "Invalid signature" });
-      }
-      if (isValid) {
-        await db
-          .delete(AuthMessages)
-          .where(eq(AuthMessages.nonce, storedMessage?.nonce as string));
-      }
       let user = await UserModel.findOne(address, application_id);
 
       if (!user) {
@@ -190,7 +191,7 @@ Expires At: ${expiresAt.toISOString()}`;
           auth_type: "web3",
           chain_id,
           chain,
-          network: network,
+          network,
         });
       }
 
