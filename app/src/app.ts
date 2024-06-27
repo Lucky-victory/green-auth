@@ -10,6 +10,7 @@ import {
 // // Routes
 import indexRoute from "./routes";
 import authRoute from "./routes/auth";
+import web3AuthRoute from "./routes/auth/web3";
 import applicationRoute from "./routes/application";
 export const app = express();
 
@@ -26,6 +27,7 @@ app.use(passport.initialize());
 
 //routes
 app.use("/", indexRoute);
+app.use("/auth/web3", web3AuthRoute);
 app.use("/auth", authRoute);
 app.use("/applications", applicationRoute);
 

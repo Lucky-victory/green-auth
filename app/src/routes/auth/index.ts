@@ -22,5 +22,4 @@ router.post(
 router.get("/google", AuthHandler.googleLogin);
 
 router.get("/google/callback", AuthHandler.googleCallback);
-
 export default router;

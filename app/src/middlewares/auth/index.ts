@@ -50,7 +50,9 @@ export const appIdMiddleware = (
   try {
     const appId = getAppIdFromHeaderQueryOrBody(req);
     if (!appId) {
-      return res.status(401).json({ error: "AppId header missing" });
+      return res
+        .status(401)
+        .json({ error: "x-app-id header or app_id query missing" });
     }
     next();
   } catch (error) {

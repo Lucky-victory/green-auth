@@ -31,9 +31,7 @@ export const getTokenFromHeaders = (req: Request) => {
 /**
    get app id from header x-app-id or req.query or req.body
  *  */
-export const getAppIdFromHeaderQueryOrBody = (
-  req: Request
-): string | undefined => {
+export const getAppIdFromHeaderQueryOrBody = (req: Request): string => {
   const appId = req.headers["x-app-id"] as string;
   if (appId) {
     return appId;
