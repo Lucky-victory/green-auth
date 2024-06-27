@@ -14,6 +14,8 @@ export const generateToken = (user: Partial<USER>): string => {
       application_id: user.application_id,
       address: user.address,
       chain_id: user.chain_id,
+      chain:user.chain,
+      network:user.network
     },
     JWT_SECRET!,
     { expiresIn: "1d" }
@@ -47,6 +49,8 @@ export const generateRefreshToken = (user: Partial<USER>): string => {
       application_id: user.application_id,
       address: user.address,
       chain_id: user.chain_id,
+      chain: user.chain,
+      network:user.network
     },
     JWT_REFRESH_SECRET!,
     {
@@ -63,5 +67,7 @@ export const verifyToken = (token: string) => {
     application_id: USER["application_id"];
     address: USER["address"];
     chain_id: USER["chain_id"];
+    chain: USER["chain"];
+    network: USER["network"];
   };
 };

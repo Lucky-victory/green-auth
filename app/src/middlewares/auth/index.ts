@@ -25,9 +25,9 @@ export const authMiddleware = async (
     }
 
     const decoded = verifyToken(token);
-    console.log({ decoded });
 
-    const user = await UserModel.findByAuthId(decoded.id, "green_auth");
+    const appId = getAppIdFromHeaderQueryOrBody(req);
+    const user = await UserModel.findByAuthId(decoded.id, appId);
 
     if (!user) {
       return res.status(401).json({ error: "User not found" });
