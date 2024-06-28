@@ -1,7 +1,3 @@
-# green-auth
-
-An open-source web3 authentication
-
 # @green-auth/snowflake-unique-id
 
 A TypeScript implementation of Twitter's Snowflake ID generation algorithm with additional features for URL-safe short IDs.
